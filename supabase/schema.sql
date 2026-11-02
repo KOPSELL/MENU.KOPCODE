@@ -172,3 +172,79 @@ begin
 exception when duplicate_object then null;
 when undefined_object then null;
 end $$;
+
+
+-- Atomic, price-safe checkout for Pro/Complete plans.
+-- The browser sends only product IDs and quantities; prices/names are read from the database.
+create or replace function public.submit_restaurant_order(
+  p_restaurant_id uuid,
+  p_customer_name text,
+  p_customer_phone text,
+  p_delivery_type text,
+  p_address text,
+  p_notes text,
+  p_items jsonb
+) returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_order_id uuid;
+  v_total numeric(12,2) := 0;
+  v_item record;
+  v_product public.products%rowtype;
+  v_qty integer;
+begin
+  if length(trim(coalesce(p_customer_name,''))) < 2 then
+    raise exception 'Informe seu nome.';
+  end if;
+  if length(regexp_replace(coalesce(p_customer_phone,''),'\\D','','g')) < 8 then
+    raise exception 'Informe um WhatsApp válido.';
+  end if;
+  if p_delivery_type not in ('delivery','pickup') then
+    raise exception 'Tipo de entrega inválido.';
+  end if;
+  if p_delivery_type='delivery' and length(trim(coalesce(p_address,''))) < 4 then
+    raise exception 'Informe o endereço de entrega.';
+  end if;
+  if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items)=0 then
+    raise exception 'A sacola está vazia.';
+  end if;
+  if not exists(select 1 from public.restaurants where id=p_restaurant_id and is_open=true and plan in ('pro','complete')) then
+    raise exception 'Restaurante indisponível para pedidos online.';
+  end if;
+
+  for v_item in select * from jsonb_to_recordset(p_items) as x(product_id uuid, quantity integer)
+  loop
+    v_qty := v_item.quantity;
+    if v_qty is null or v_qty < 1 or v_qty > 50 then
+      raise exception 'Quantidade inválida.';
+    end if;
+    select * into v_product from public.products
+      where id=v_item.product_id and restaurant_id=p_restaurant_id and available=true;
+    if not found then
+      raise exception 'Um dos produtos não está mais disponível.';
+    end if;
+    v_total := v_total + (v_product.price * v_qty);
+  end loop;
+
+  insert into public.orders(restaurant_id,customer_name,customer_phone,delivery_type,address,notes,total,status)
+  values(p_restaurant_id,trim(p_customer_name),trim(p_customer_phone),p_delivery_type,
+    case when p_delivery_type='delivery' then trim(p_address) else null end,
+    nullif(trim(coalesce(p_notes,'')),''),v_total,'new')
+  returning id into v_order_id;
+
+  for v_item in select * from jsonb_to_recordset(p_items) as x(product_id uuid, quantity integer)
+  loop
+    select * into v_product from public.products
+      where id=v_item.product_id and restaurant_id=p_restaurant_id and available=true;
+    insert into public.order_items(order_id,product_id,product_name,unit_price,quantity,total)
+    values(v_order_id,v_product.id,v_product.name,v_product.price,v_item.quantity,v_product.price*v_item.quantity);
+  end loop;
+  return v_order_id;
+end;
+$$;
+
+revoke all on function public.submit_restaurant_order(uuid,text,text,text,text,text,jsonb) from public;
+grant execute on function public.submit_restaurant_order(uuid,text,text,text,text,text,jsonb) to anon, authenticated;

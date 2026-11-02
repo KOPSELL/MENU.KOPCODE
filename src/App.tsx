@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { ArrowLeft, ArrowRight, Bell, Check, ChefHat, Clock3, ImagePlus, LayoutDashboard, LogOut, Menu as MenuIcon, MessageCircle, Package, Plus, Printer, Search, Settings, ShoppingBag, Store, Trash2, TrendingUp, Upload, Utensils, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Bell, Check, ChefHat, Clock3, ImagePlus, LayoutDashboard, LogOut, Menu as MenuIcon, MessageCircle, Package, Plus, Printer, Search, Settings, ShoppingBag, Store, Trash2, TrendingUp, Upload, Utensils, X, ShieldCheck, RefreshCw, Users, CalendarDays } from 'lucide-react'
 
 const url = (import.meta.env.VITE_SUPABASE_URL || 'https://nwznpaybbqpuqbowllzx.supabase.co') as string | undefined
 // Publishable keys are designed for browser use; keep database access protected by RLS.
@@ -61,5 +61,90 @@ function PublicMenu(){const {slug}=useParams();const [shop,setShop]=useState<Res
  async function finish(e:FormEvent){e.preventDefault();if(!shop||!cart.length)return;if(!shop.is_open){setError('Este restaurante está fechado no momento.');return}if(shop.plan==='basic'&&shop.phone.replace(/[^0-9]/g,'').length<8){setError('O restaurante ainda não configurou um WhatsApp válido.');return}setBusy(true);setError('');try{if(shop.plan==='basic'){const lines=cart.map(x=>x.qty+'x '+x.product.name+' — '+money(x.product.price*x.qty)).join('\n');const message=['Olá! Gostaria de fazer este pedido:','',lines,'','Total: '+money(total),'Cliente: '+customer,'Telefone: '+phone,delivery==='delivery'?'Entrega: '+address:'Retirada no local','Observações: '+(notes||'Nenhuma')].join('\n');window.open('https://wa.me/'+shop.phone.replace(/[^0-9]/g,'')+'?text='+encodeURIComponent(message),'_blank');setCheckout(false);return}const {error:orderError}=await supabase!.rpc('submit_restaurant_order',{p_restaurant_id:shop.id,p_customer_name:customer,p_customer_phone:phone,p_delivery_type:delivery,p_address:delivery==='delivery'?address:null,p_notes:notes,p_items:cart.map(x=>({product_id:x.product.id,quantity:x.qty}))});if(orderError)throw orderError;setCart([]);setCheckout(false);alert('Pedido enviado! O restaurante já pode acompanhar pelo painel.')}catch(err:any){setError(err.message||'Não foi possível enviar o pedido.')}finally{setBusy(false)}}
  if(!supabase)return <SetupNotice/>;if(menuLoading)return <div className="loading">Carregando cardápio...</div>;if(notFound||!shop)return <div className="setup"><div className="setup-mark"><Store/></div><h2>Cardápio não encontrado</h2><p>Confira se o link está correto ou peça ao restaurante o endereço atualizado.</p><Link to="/" className="btn primary">Voltar ao início</Link></div>
  return <div className="public-menu" style={{'--accent':shop.accent_color||'#d97736'} as any}><header className="public-top"><Link to="/" className="public-brand"><Brand/></Link><span>Cardápio digital</span></header><div className="store-cover" style={shop.cover_url?{backgroundImage:'linear-gradient(90deg,rgba(0,0,0,.65),rgba(0,0,0,.12)),url('+shop.cover_url+')'}:{}}><div className="store-identity">{shop.logo_url?<img src={shop.logo_url}/>:<div className="store-logo">{shop.name.slice(0,1)}</div>}<div><h1>{shop.name}</h1><p>{shop.description||'Feito com carinho para você.'}</p><small><span className="live-dot"/> {shop.is_open===false?'Fechado no momento':'Aberto para pedidos'} {shop.address?' · '+shop.address:''}</small>{shop.is_open===false&&<p className="error">Este restaurante está fechado e não está recebendo pedidos agora.</p>}</div></div></div><main className="menu-content"><div className="menu-heading"><div><span className="eyebrow">NOSSO CARDÁPIO</span><h2>Escolha seus favoritos</h2></div><label className="search-box"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar no cardápio"/></label></div><div className="category-pills"><button className={category==='all'?'selected':''} onClick={()=>setCategory('all')}>Todos</button>{categories.map(c=><button key={c.id} className={category===c.id?'selected':''} onClick={()=>setCategory(c.id)}>{c.name}</button>)}</div><div className="public-products">{visible.map(p=><article className="public-product" key={p.id}><div className="public-product-img">{p.image_url?<img src={p.image_url}/>:<Utensils size={30}/>}</div><div className="public-product-info"><h3>{p.name}</h3><p>{p.description}</p><strong>{money(Number(p.price))}</strong></div><button className="add-product" disabled={!shop.is_open} title={shop.is_open?"Adicionar ao pedido":"Restaurante fechado"} onClick={()=>add(p)}><Plus size={19}/></button></article>)}</div>{!visible.length&&<Empty text="Nenhum produto encontrado."/>}</main>{cart.length>0&&<button className="cart-bar" onClick={()=>setCheckout(true)}><span><ShoppingBag size={18}/> {cart.reduce((s,x)=>s+x.qty,0)} item(ns)</span><b>Ver sacola</b><strong>{money(total)}</strong></button>}{checkout&&<div className="modal-backdrop"><form className="checkout-modal" onSubmit={finish}><div className="modal-head"><div><span className="eyebrow">QUASE LÁ</span><h2>Finalize seu pedido</h2><p>Confira os itens e informe seus dados.</p></div><button type="button" className="icon-btn" onClick={()=>setCheckout(false)}><X/></button></div><div className="checkout-items">{cart.map(x=><div key={x.product.id}><span>{x.qty}x {x.product.name}</span><b>{money(x.qty*x.product.price)}</b><div><button type="button" onClick={()=>qty(x.product.id,-1)}>−</button><button type="button" onClick={()=>qty(x.product.id,1)}>+</button></div></div>)}</div><div className="checkout-total"><span>Total do pedido</span><b>{money(total)}</b></div><label>Seu nome<input required value={customer} onChange={e=>setCustomer(e.target.value)} placeholder="Como podemos chamar você?"/></label><label>WhatsApp<input required value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(00) 00000-0000"/></label><div className="delivery-choice"><button type="button" className={delivery==='delivery'?'chosen':''} onClick={()=>setDelivery('delivery')}>Entrega</button><button type="button" className={delivery==='pickup'?'chosen':''} onClick={()=>setDelivery('pickup')}>Retirada no local</button></div>{delivery==='delivery'&&<label>Endereço de entrega<input required value={address} onChange={e=>setAddress(e.target.value)} placeholder="Rua, número e bairro"/></label>}<label>Observações<textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Alguma observação sobre o pedido?"/></label>{error&&<div className="error">{error}</div>}<button className="btn primary full big" disabled={busy}>{busy?'Enviando...':shop.plan==='basic'?'Enviar pedido pelo WhatsApp':'Confirmar pedido'} <ArrowRight size={17}/></button><small className="terms">O restaurante receberá seus dados para processar o pedido.</small></form></div>}</div>}
+
+type AdminRestaurant = {id:string;name:string;slug:string;phone:string;plan:'basic'|'pro'|'complete';is_open:boolean;created_at:string;owner_email:string|null;orders_count:number;revenue_total:number}
+type AdminOrder = {id:string;customer_name:string;customer_phone:string;total:number;status:string;created_at:string;delivery_type:string;restaurant_name:string}
+type AdminStats = {restaurants_total:number;restaurants_open:number;restaurants_closed:number;orders_total:number;orders_today:number;revenue_total:number;revenue_today:number;plan_basic:number;plan_pro:number;plan_complete:number}
+function AdminPanel(){
+ const [checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[userEmail,setUserEmail]=useState('');
+ const [stats,setStats]=useState<AdminStats|null>(null),[restaurants,setRestaurants]=useState<AdminRestaurant[]>([]),[recent,setRecent]=useState<AdminOrder[]>([]);
+ const [search,setSearch]=useState(''),[message,setMessage]=useState(''),[loading,setLoading]=useState(false),[saving,setSaving]=useState('');
+ const [editing,setEditing]=useState<AdminRestaurant|null>(null),[draft,setDraft]=useState({name:'',phone:'',plan:'basic' as 'basic'|'pro'|'complete',is_open:true});
+ async function loadData(term=search){
+  if(!supabase)return;
+  setLoading(true);setMessage('');
+  const [s,r,o]=await Promise.all([
+   supabase.rpc('admin_dashboard_stats'),
+   supabase.rpc('admin_list_restaurants',{p_search:term}),
+   supabase.rpc('admin_recent_orders',{p_limit:15})
+  ]);
+  if(s.error||r.error||o.error){setMessage(s.error?.message||r.error?.message||o.error?.message||'Falha ao carregar dados administrativos.');}
+  else{setStats(s.data as AdminStats);setRestaurants((r.data||[]) as AdminRestaurant[]);setRecent((o.data||[]) as AdminOrder[]);}
+  setLoading(false);
+ }
+ useEffect(()=>{
+  let active=true;
+  async function verify(){
+   if(!supabase){setChecking(false);return}
+   const {data,error}=await supabase.auth.getSession();
+   if(!active)return;
+   const session=data.session;
+   setUserEmail(session?.user.email||'');
+   if(!session){setAllowed(false);setChecking(false);return}
+   const {data:isAdmin,error:adminError}=await supabase.rpc('is_platform_admin');
+   if(!active)return;
+   if(adminError){setMessage(adminError.message);setAllowed(false);setChecking(false);return}
+   setAllowed(!!isAdmin);setChecking(false);
+   if(isAdmin)await loadData('');
+  }
+  verify();
+  const {data:listener}=supabase?.auth.onAuthStateChange(()=>{verify()})||{data:{subscription:{unsubscribe(){}}}};
+  return()=>{active=false;listener.subscription.unsubscribe()};
+ },[]);
+ function startEdit(r:AdminRestaurant){setEditing(r);setDraft({name:r.name,phone:r.phone||'',plan:r.plan,is_open:r.is_open})}
+ async function saveRestaurant(){
+  if(!editing||!supabase)return;
+  setSaving(editing.id);
+  const {error}=await supabase.rpc('admin_update_restaurant',{p_restaurant_id:editing.id,p_name:draft.name,p_phone:draft.phone,p_plan:draft.plan,p_is_open:draft.is_open});
+  if(error)setMessage(error.message);else{setMessage('Restaurante atualizado com sucesso.');setEditing(null);await loadData()}
+  setSaving('');
+ }
+ async function toggleRestaurant(r:AdminRestaurant){
+  if(!supabase)return;
+  setSaving(r.id);
+  const {error}=await supabase.rpc('admin_update_restaurant',{p_restaurant_id:r.id,p_name:r.name,p_phone:r.phone||'',p_plan:r.plan,p_is_open:!r.is_open});
+  if(error)setMessage(error.message);else await loadData();
+  setSaving('');
+ }
+ if(checking)return <div className="admin-loading"><div className="loading-orb"/><p>Verificando acesso administrativo...</p></div>;
+ if(!supabase)return <SetupNotice/>;
+ if(!allowed)return <div className="admin-access"><div className="admin-brand"><ShieldCheck size={25}/><b>MENU.KOPCODE <span>ADMIN</span></b></div><div className="admin-access-card"><ShieldCheck size={38}/><h1>Acesso administrativo</h1><p>{userEmail?'Esta conta não possui permissão de administrador.':'Entre com sua conta de administrador para continuar.'}</p>{userEmail&&<small>Conta conectada: {userEmail}</small>}<Link to="/entrar" className="btn primary full">Ir para login <ArrowRight size={16}/></Link><Link to="/" className="admin-back">Voltar ao site</Link></div></div>;
+ return <div className="admin-shell">
+  <aside className="admin-sidebar"><Link to="/" className="admin-brand"><span className="admin-brand-icon"><ShieldCheck/></span><span>MENU.KOPCODE<small>PAINEL MASTER</small></span></Link><div className="admin-side-caption">PLATAFORMA</div><a className="admin-side-active" href="#resumo"><LayoutDashboard size={17}/> Visão geral</a><a href="#restaurantes"><Store size={17}/> Restaurantes</a><a href="#pedidos"><ShoppingBag size={17}/> Pedidos recentes</a><div className="admin-side-bottom"><span>{userEmail}</span><button onClick={async()=>{await supabase?.auth.signOut();window.location.href='/entrar'}}><LogOut size={16}/> Sair</button></div></aside>
+  <main className="admin-main">
+   <header className="admin-header"><div><span>CONTROLE DA PLATAFORMA</span><h1>Painel administrativo</h1><p>Gerencie restaurantes, planos e acompanhe a operação.</p></div><button className="admin-refresh" onClick={()=>loadData()} disabled={loading}><RefreshCw size={16}/> {loading?'Atualizando...':'Atualizar dados'}</button></header>
+   {message&&<div className="admin-message" onClick={()=>setMessage('')}>{message}<X size={15}/></div>}
+   <section id="resumo" className="admin-stats">
+    <article><span><Store size={18}/></span><small>Restaurantes cadastrados</small><b>{stats?.restaurants_total??'—'}</b><em>{stats?.restaurants_open??0} ativos · {stats?.restaurants_closed??0} pausados</em></article>
+    <article><span><ShoppingBag size={18}/></span><small>Pedidos recebidos</small><b>{stats?.orders_total??'—'}</b><em>{stats?.orders_today??0} hoje</em></article>
+    <article><span><TrendingUp size={18}/></span><small>Vendas registradas</small><b>{money(Number(stats?.revenue_total||0))}</b><em>{money(Number(stats?.revenue_today||0))} hoje</em></article>
+    <article><span><Users size={18}/></span><small>Distribuição de planos</small><b>{stats?.plan_basic??0} / {stats?.plan_pro??0} / {stats?.plan_complete??0}</b><em>Essencial / Pro / Completo</em></article>
+   </section>
+   <section id="restaurantes" className="admin-section">
+    <div className="admin-section-head"><div><span>BASE DE CLIENTES</span><h2>Restaurantes</h2><p>Consulte contas, altere planos e pause ou reative lojas.</p></div><div className="admin-search"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')loadData(search)}} placeholder="Buscar nome, e-mail ou telefone"/><button onClick={()=>loadData(search)}>Buscar</button></div></div>
+    <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Restaurante</th><th>Responsável</th><th>Plano</th><th>Pedidos</th><th>Vendas</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+    {restaurants.map(r=><tr key={r.id}><td><b>{r.name}</b><small>/{r.slug}</small></td><td>{r.owner_email||'—'}<small>{r.phone||'Sem telefone'}</small></td><td><span className={'admin-plan plan-'+r.plan}>{r.plan==='basic'?'Essencial':r.plan==='pro'?'Pedidos Pro':'Completo'}</span></td><td>{r.orders_count}</td><td>{money(Number(r.revenue_total||0))}</td><td><span className={r.is_open?'admin-status on':'admin-status off'}>{r.is_open?'Ativo':'Pausado'}</span></td><td><div className="admin-actions"><button onClick={()=>startEdit(r)}>Editar</button><button disabled={saving===r.id} onClick={()=>toggleRestaurant(r)}>{r.is_open?'Pausar':'Reativar'}</button></div></td></tr>)}
+    {restaurants.length===0&&<tr><td colSpan={7} className="admin-empty">{loading?'Carregando...':'Nenhum restaurante encontrado.'}</td></tr>}
+    </tbody></table></div>
+   </section>
+   <section id="pedidos" className="admin-section"><div className="admin-section-head"><div><span>ATIVIDADE RECENTE</span><h2>Últimos pedidos</h2><p>Pedidos recebidos em todos os restaurantes da plataforma.</p></div></div>
+    <div className="admin-orders">{recent.map(o=><div className="admin-order" key={o.id}><div className="admin-order-icon"><ShoppingBag size={17}/></div><div className="admin-order-info"><b>{o.customer_name}</b><small>{o.restaurant_name} · {o.customer_phone}</small></div><strong>{money(Number(o.total))}</strong><span className={'admin-order-status status-'+o.status}>{({new:'Novo',preparing:'Preparando',ready:'Pronto',completed:'Concluído',cancelled:'Cancelado'} as any)[o.status]||o.status}</span><small>{new Date(o.created_at).toLocaleString('pt-BR')}</small></div>)}{recent.length===0&&<p className="admin-empty">Nenhum pedido registrado ainda.</p>}</div>
+   </section>
+   <footer className="admin-footer">MENU.KOPCODE · Administração segura da plataforma <span><CalendarDays size={14}/> {new Date().toLocaleDateString('pt-BR')}</span></footer>
+  </main>
+  {editing&&<div className="admin-modal-backdrop"><form className="admin-edit-modal" onSubmit={e=>{e.preventDefault();saveRestaurant()}}><div className="admin-modal-head"><div><span>CONFIGURAÇÃO DA CONTA</span><h2>Editar restaurante</h2></div><button type="button" onClick={()=>setEditing(null)}><X/></button></div><label>Nome do restaurante<input value={draft.name} onChange={e=>setDraft({...draft,name:e.target.value})} required minLength={2}/></label><label>Telefone / WhatsApp<input value={draft.phone} onChange={e=>setDraft({...draft,phone:e.target.value})}/></label><label>Plano<select value={draft.plan} onChange={e=>setDraft({...draft,plan:e.target.value as any})}><option value="basic">Essencial</option><option value="pro">Pedidos Pro</option><option value="complete">Gestão Completa</option></select></label><label className="admin-check"><input type="checkbox" checked={draft.is_open} onChange={e=>setDraft({...draft,is_open:e.target.checked})}/> Restaurante ativo e recebendo pedidos</label><div className="admin-modal-actions"><button type="button" onClick={()=>setEditing(null)}>Cancelar</button><button className="btn primary" disabled={saving===editing.id}>{saving===editing.id?'Salvando...':'Salvar alterações'}</button></div></form></div>}
+ </div>
+}
+
 export default function App(){const path=window.location.pathname;if(path.startsWith('/m/'))return <PublicMenu/>;return <><RoutesFallback/></>}
-function RoutesFallback(){const path=window.location.pathname;if(path==='/cadastro')return <Auth mode="signup"/>;if(path==='/entrar')return <Auth mode="login"/>;if(path==='/painel')return <Dashboard/>;return <Landing/>}
+function RoutesFallback(){const path=window.location.pathname;if(path==='/cadastro')return <Auth mode="signup"/>;if(path==='/entrar')return <Auth mode="login"/>;if(path==='/painel')return <Dashboard/>;if(path==='/admin')return <AdminPanel/>;return <Landing/>}

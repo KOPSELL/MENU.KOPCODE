@@ -187,8 +187,8 @@ create or replace function public.submit_restaurant_order(
 ) returns uuid
 language plpgsql
 security definer
-set search_path = public
-as $$
+set search_path = pg_catalog, public
+as $
 declare
   v_order_id uuid;
   v_total numeric(12,2) := 0;
@@ -208,7 +208,7 @@ begin
   if p_delivery_type='delivery' and length(trim(coalesce(p_address,''))) < 4 then
     raise exception 'Informe o endereço de entrega.';
   end if;
-  if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items)=0 then
+  if coalesce(jsonb_typeof(p_items),'') <> 'array' or jsonb_array_length(p_items)=0 or jsonb_array_length(p_items)>50 then
     raise exception 'A sacola está vazia.';
   end if;
   if not exists(select 1 from public.restaurants where id=p_restaurant_id and is_open=true and plan in ('pro','complete')) then
@@ -248,3 +248,42 @@ $$;
 
 revoke all on function public.submit_restaurant_order(uuid,text,text,text,text,text,jsonb) from public;
 grant execute on function public.submit_restaurant_order(uuid,text,text,text,text,text,jsonb) to anon, authenticated;
+
+
+-- SECURITY HARDENING (safe to run again).
+-- All order creation must pass through the atomic, price-validating RPC.
+drop policy if exists "customers submit orders" on public.orders;
+drop policy if exists "customers add order items" on public.order_items;
+revoke insert on public.orders, public.order_items from anon, authenticated;
+
+-- Do not expose the internal account-owner UUID to anonymous menu visitors.
+-- Authenticated owners retain normal access subject to RLS.
+revoke select on public.restaurants from anon;
+grant select (
+  id, name, slug, phone, description, logo_url, cover_url, address,
+  plan, accent_color, is_open, created_at
+) on public.restaurants to anon;
+
+-- A product can only reference a category belonging to the same restaurant.
+create or replace function public.validate_product_category_tenant()
+returns trigger
+language plpgsql
+set search_path = pg_catalog, public
+as $$
+begin
+  if new.category_id is not null and not exists (
+    select 1 from public.categories c
+    where c.id = new.category_id
+      and c.restaurant_id = new.restaurant_id
+  ) then
+    raise exception 'A categoria selecionada não pertence a este restaurante.';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists validate_product_category_tenant on public.products;
+create trigger validate_product_category_tenant
+before insert or update of category_id, restaurant_id
+on public.products
+for each row execute function public.validate_product_category_tenant();

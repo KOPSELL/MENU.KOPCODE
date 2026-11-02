@@ -25,6 +25,17 @@ Plataforma de cardápio digital e pedidos para restaurantes, com painel administ
    - `VITE_SUPABASE_ANON_KEY` (ou `VITE_SUPABASE_PUBLISHABLE_KEY`)
 5. Instale dependências e execute `npm install`, depois `npm run dev`.
 
+## Atualização de segurança para bancos já criados
+
+Se o banco já foi configurado antes desta atualização, execute também o arquivo
+`supabase/migrations/202611020001_security_hardening.sql` no SQL Editor do Supabase.
+Em instalações novas, basta executar o `supabase/schema.sql` atualizado.
+
+Essa proteção remove a criação direta de pedidos por clientes e exige o checkout
+atômico que valida os produtos e recalcula os preços no banco. Também impede que
+um produto seja associado a uma categoria de outro restaurante e oculta o
+identificador interno do proprietário nas consultas públicas anônimas.
+
 ## Deploy Vercel
 
 Importe este repositório na Vercel, configure as mesmas variáveis de ambiente e publique. O `vercel.json` já contém rewrite para rotas SPA.

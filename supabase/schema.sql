@@ -199,7 +199,7 @@ begin
   if length(trim(coalesce(p_customer_name,''))) < 2 then
     raise exception 'Informe seu nome.';
   end if;
-  if length(regexp_replace(coalesce(p_customer_phone,''),'\\D','','g')) < 8 then
+  if length(regexp_replace(coalesce(p_customer_phone,''),'[^0-9]','','g')) < 8 then
     raise exception 'Informe um WhatsApp válido.';
   end if;
   if p_delivery_type not in ('delivery','pickup') then

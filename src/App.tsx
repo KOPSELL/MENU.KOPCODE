@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { ArrowLeft, ArrowRight, Bell, Check, ChefHat, Clock3, ImagePlus, LayoutDashboard, LogOut, Menu as MenuIcon, MessageCircle, Package, Plus, Printer, Search, Settings, ShoppingBag, Store, Trash2, TrendingUp, Upload, Utensils, X, ShieldCheck, RefreshCw, Users, CalendarDays } from 'lucide-react'
 
@@ -146,4 +146,4 @@ function AdminPanel(){
 }
 
 export default function App(){const path=window.location.pathname;if(path.startsWith('/m/'))return <PublicMenu/>;return <><RoutesFallback/></>}
-function RoutesFallback(){const path=window.location.pathname;if(path==='/cadastro')return <Auth mode="signup"/>;if(path==='/entrar')return <Auth mode="login"/>;if(path==='/painel')return <Dashboard/>;if(path==='/admin')return <AdminPanel/>;return <Landing/>}
+function RoutesFallback(){const location=useLocation();const path=location.pathname;if(path==='/cadastro')return <Auth mode="signup"/>;if(path==='/entrar')return <Auth mode="login"/>;if(path==='/painel')return <Dashboard/>;if(path==='/admin')return <AdminPanel/>;return <Landing/>}

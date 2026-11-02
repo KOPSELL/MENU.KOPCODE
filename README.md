@@ -19,7 +19,7 @@ Plataforma de cardápio digital e pedidos para restaurantes, com painel administ
 
 1. Crie um projeto Supabase.
 2. Abra SQL Editor e execute todo o conteúdo de `supabase/schema.sql`.
-3. Em Authentication > Providers > Email, habilite e-mail/senha. Para cadastro sem etapa de confirmação, desative temporariamente **Confirm email**; se mantiver confirmação ativa, o restaurante será criado depois que a conta estiver confirmada e entrar pela primeira vez (fluxo de provisionamento adicional ainda precisa ser configurado).
+3. Em Authentication > Providers > Email, habilite e-mail/senha e desative **Confirm email** para este fluxo inicial. O cadastro provisiona o restaurante logo após o Supabase criar a sessão; com confirmação de e-mail ativa, o provisionamento ainda precisa ser adaptado para acontecer após a confirmação.
 4. Copie `.env.example` para `.env.local` e preencha:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY` (ou `VITE_SUPABASE_PUBLISHABLE_KEY`)

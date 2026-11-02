@@ -3,8 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { ArrowLeft, ArrowRight, Bell, Check, ChefHat, Clock3, ImagePlus, LayoutDashboard, LogOut, Menu as MenuIcon, MessageCircle, Package, Plus, Printer, Search, Settings, ShoppingBag, Store, Trash2, TrendingUp, Upload, Utensils, X } from 'lucide-react'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const key = (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) as string | undefined
+const url = (import.meta.env.VITE_SUPABASE_URL || 'https://nwznpaybbqpuqbowllzx.supabase.co') as string | undefined
+// Publishable keys are designed for browser use; keep database access protected by RLS.
+const key = (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable__qSMcLgA8qPw77hzT9zCqw_9mEySW3m') as string | undefined
 const supabase: SupabaseClient | null = url && key ? createClient(url, key) : null
 type Restaurant = { id:string; name:string; slug:string; phone:string; description:string; logo_url:string; cover_url:string; address:string; plan:'basic'|'pro'|'complete'; accent_color:string; is_open:boolean }
 type Product = { id:string; restaurant_id:string; category_id:string|null; name:string; description:string; price:number; image_url:string; available:boolean; featured:boolean }

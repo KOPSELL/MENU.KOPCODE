@@ -98,8 +98,7 @@ function AdminPanel(){
    if(isAdmin)await loadData('');
   }
   verify();
-  const {data:listener}=supabase?.auth.onAuthStateChange(()=>{verify()})||{data:{subscription:{unsubscribe(){}}}};
-  return()=>{active=false;listener.subscription.unsubscribe()};
+  return()=>{active=false};
  },[]);
  function startEdit(r:AdminRestaurant){setEditing(r);setDraft({name:r.name,phone:r.phone||'',plan:r.plan,is_open:r.is_open})}
  async function saveRestaurant(){

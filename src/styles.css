@@ -210,3 +210,20 @@ body{background:var(--paper);color:var(--ink)}
   .food-float-layer span{font-size:26px}
   .public-menu .public-product{background:#1b1714}
 }
+
+
+/* Localização do restaurante e rota para retirada */
+.restaurant-location-settings{grid-column:1/-1;padding:18px;border:1px solid #e6dfd4;border-radius:16px;background:#faf8f3;display:grid;gap:12px}
+.location-settings-title{display:flex;align-items:flex-start;gap:10px;color:#806b43}
+.location-settings-title>div{display:grid;gap:4px}
+.location-settings-title b{color:#28271f}
+.location-settings-title small,.location-settings-hint{color:#777366;font-size:12px;line-height:1.5}
+.public-location{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px;color:#f4c18a;font-size:13px}
+.public-location span{color:#f4dfc8}
+.public-location a{display:inline-flex;align-items:center;gap:5px;margin-left:4px;color:#ffae58;font-weight:800;text-decoration:none}
+.pickup-location-card{display:grid;gap:13px;padding:15px;border:1px solid #68442d;border-radius:14px;background:#211811}
+.pickup-location-card>div{display:flex;align-items:flex-start;gap:10px;color:#ffad59}
+.pickup-location-card>div>div{display:grid;gap:5px}
+.pickup-location-card b{color:#fff1e2}
+.pickup-location-card small{color:#d2bba4;line-height:1.5}
+.pickup-location-card .btn{width:100%;justify-content:center}

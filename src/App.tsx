@@ -127,9 +127,9 @@ function PublicMenu(){const location=useLocation();const slug=decodeURIComponent
   loadCustomerPortal(token).catch(()=>{localStorage.removeItem('menukopcode_customer_'+shop.id);setCustomerToken('')});
  },[shop?.id]);
  useEffect(()=>{
-  if(!shop||!customerToken||!customerPortalOpen||!supabase)return;
-  const channel=supabase.channel('customer-orders-'+shop.id).on('postgres_changes',{event:'*',schema:'public',table:'orders',filter:'restaurant_id=eq.'+shop.id},()=>{loadCustomerPortal(customerToken).catch(()=>{})}).subscribe();
-  return()=>{supabase?.removeChannel(channel)};
+  if(!shop||!customerToken||!customerPortalOpen)return;
+  const timer=window.setInterval(()=>{loadCustomerPortal(customerToken).catch(()=>{})},5000);
+  return()=>window.clearInterval(timer);
  },[shop?.id,customerToken,customerPortalOpen]);
  const total=cart.reduce((s,x)=>s+(Number(x.product.price)+x.addons.reduce((n,a)=>n+Number(a.price),0))*x.qty,0);const visible=products.filter(p=>(category==='all'||p.category_id===category)&&(!search||p.name.toLowerCase().includes(search.toLowerCase())))
  function add(p:Product){if(!restaurantAcceptsOrders(shop)){setError('Estamos fora do horário de atendimento ou o restaurante está fechado.');return}setError('');setChoosing(p);setSelectedAddons([]);setCustomItemNote('')}function addToCart(p:Product,extras:Addon[],observations:string[]){setCart(v=>[...v,{product:p,qty:1,addons:extras,observations}]);setChoosing(null)}

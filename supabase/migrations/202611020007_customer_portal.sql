@@ -256,3 +256,43 @@ exception
   when duplicate_object then null;
   when undefined_object then null;
 end $$;
+
+
+-- Lista clientes apenas para o proprietário autenticado do restaurante.
+create or replace function public.restaurant_admin_customer_list(p_restaurant_id uuid)
+returns table(
+  id uuid,
+  customer_name text,
+  customer_phone text,
+  created_at timestamptz,
+  orders_count bigint,
+  last_order_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+begin
+  if not exists (
+    select 1 from public.restaurants r
+    where r.id=p_restaurant_id
+      and r.owner_id=auth.uid()
+      and r.plan in ('pro','complete')
+  ) then
+    raise exception 'Acesso não autorizado à lista de clientes.';
+  end if;
+
+  return query
+  select c.id,c.customer_name,c.customer_phone,c.created_at,
+    count(o.id)::bigint,max(o.created_at)
+  from public.restaurant_customers c
+  left join public.orders o
+    on o.customer_id=c.id and o.restaurant_id=p_restaurant_id
+  where c.restaurant_id=p_restaurant_id
+  group by c.id,c.customer_name,c.customer_phone,c.created_at
+  order by c.created_at desc;
+end;
+$$;
+
+revoke all on function public.restaurant_admin_customer_list(uuid) from public;
+grant execute on function public.restaurant_admin_customer_list(uuid) to authenticated;

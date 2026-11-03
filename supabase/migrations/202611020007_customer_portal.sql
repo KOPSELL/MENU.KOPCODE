@@ -1,7 +1,9 @@
 -- MENU.KOPCODE | Central do Cliente para Premium e Gestão Completa
 -- Execute no SQL Editor do projeto Supabase exclusivo do MENU.KOPCODE.
 
-create extension if not exists pgcrypto;
+create schema if not exists extensions;
+create extension if not exists pgcrypto with schema extensions;
+alter extension pgcrypto set schema extensions;
 
 create table if not exists public.restaurant_customers (
   id uuid primary key default gen_random_uuid(),
@@ -69,7 +71,7 @@ begin
     raise exception 'A Central do Cliente está disponível nos planos Premium e Gestão Completa.';
   end if;
 
-  v_hash := encode(digest(convert_to(p_device_token,'UTF8'),'sha256'),'hex');
+  v_hash := encode(extensions.digest(convert_to(p_device_token,'UTF8'),'sha256'::text),'hex');
   insert into public.restaurant_customers
     (restaurant_id,customer_name,customer_phone,device_token_hash)
   values
@@ -109,7 +111,7 @@ begin
   select * into v_customer
   from public.restaurant_customers
   where restaurant_id=p_restaurant_id
-    and device_token_hash=encode(digest(convert_to(p_device_token,'UTF8'),'sha256'),'hex');
+    and device_token_hash=encode(extensions.digest(convert_to(p_device_token,'UTF8'),'sha256'::text),'hex');
 
   if not found then
     raise exception 'Cliente não encontrado neste dispositivo.';
@@ -171,7 +173,7 @@ begin
   select id into v_customer_id
   from public.restaurant_customers
   where restaurant_id=p_restaurant_id
-    and device_token_hash=encode(digest(convert_to(p_device_token,'UTF8'),'sha256'),'hex');
+    and device_token_hash=encode(extensions.digest(convert_to(p_device_token,'UTF8'),'sha256'::text),'hex');
 
   if v_customer_id is null then
     raise exception 'Faça seu acesso à Central do Cliente novamente.';
@@ -209,7 +211,7 @@ begin
   select id into v_customer_id
   from public.restaurant_customers
   where restaurant_id=p_restaurant_id
-    and device_token_hash=encode(digest(convert_to(p_device_token,'UTF8'),'sha256'),'hex');
+    and device_token_hash=encode(extensions.digest(convert_to(p_device_token,'UTF8'),'sha256'::text),'hex');
 
   if v_customer_id is null then
     raise exception 'Identifique-se novamente para concluir o pedido.';

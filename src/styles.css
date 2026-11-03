@@ -342,3 +342,29 @@ button,a,input,select,textarea{touch-action:manipulation}
 }
 
 .customer-use-address{justify-self:start;border:0;background:transparent;color:var(--orange);font-size:11px;font-weight:800;padding:5px 0}
+
+
+/* Cadastros de clientes no painel do restaurante */
+.customer-admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 18px}
+.customer-admin-toolbar>.admin-search{max-width:420px;flex:1}
+.customer-admin-toolbar>span{font-size:12px;color:var(--muted);white-space:nowrap}
+.customer-admin-list{display:grid;gap:10px}
+.customer-admin-card{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--line);border-radius:13px;background:#fff}
+.customer-admin-avatar{width:42px;height:42px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%;background:#f5eee5;color:var(--orange)}
+.customer-admin-info{display:grid;gap:3px;min-width:0;flex:1}
+.customer-admin-info>b{font-size:14px}
+.customer-admin-info>a{font-size:12px;color:var(--orange);text-decoration:none}
+.customer-admin-info>small,.customer-admin-last>small{font-size:11px;color:var(--muted)}
+.customer-admin-metrics{display:grid;justify-items:center;min-width:64px;padding:0 12px;border-left:1px solid var(--line)}
+.customer-admin-metrics>b{font-size:20px}
+.customer-admin-metrics>small{font-size:10px;color:var(--muted)}
+.customer-admin-last{display:grid;gap:4px;min-width:120px}
+.customer-admin-last>b{font-size:12px}
+@media(max-width:620px){
+ .customer-admin-toolbar{align-items:stretch;flex-direction:column}
+ .customer-admin-toolbar>.admin-search{max-width:none}
+ .customer-admin-card{align-items:flex-start;flex-wrap:wrap;gap:10px}
+ .customer-admin-info{min-width:calc(100% - 58px)}
+ .customer-admin-metrics{margin-left:52px;border-left:0;border-top:1px solid var(--line);padding:9px 8px 0 0;justify-items:start}
+ .customer-admin-last{border-top:1px solid var(--line);padding-top:9px;min-width:0;flex:1}
+}

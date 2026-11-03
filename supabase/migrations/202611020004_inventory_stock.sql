@@ -106,8 +106,7 @@ begin
 
     perform set_config('app.stock_sale_update', 'on', true);
     update public.products
-      set stock_quantity = stock_quantity - new.quantity,
-          available = case when stock_quantity - new.quantity <= 0 then false else available end
+      set stock_quantity = stock_quantity - new.quantity
       where id = new.product_id;
     perform set_config('app.stock_sale_update', 'off', true);
 

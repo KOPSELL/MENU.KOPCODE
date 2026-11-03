@@ -11,7 +11,7 @@ type Restaurant = { id:string; name:string; slug:string; phone:string; descripti
 type Product = { id:string; restaurant_id:string; category_id:string|null; name:string; description:string; price:number; image_url:string; available:boolean; featured:boolean }
 type Category = { id:string; name:string; sort_order:number }
 type Addon = { id:string; restaurant_id:string; name:string; price:number; active:boolean; category_ids:string[] }
-type Order = { id:string; customer_name:string; customer_phone:string; delivery_type:string; address:string|null; notes:string|null; total:number; status:string; created_at:string; items?:any[] }
+type Order = { id:string; customer_name:string; customer_phone:string; delivery_type:string; address:string|null; notes:string|null; total:number; status:string; created_at:string; items?:any[]; order_items?:any[] }
 const money = (n:number) => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const plans = [
  {id:'basic',name:'Essencial',tag:'WhatsApp',desc:'Cardápio digital e pedidos enviados direto ao WhatsApp.',features:['Link exclusivo do cardápio','Produtos, fotos e categorias','Carrinho de compras','Pedido enviado ao WhatsApp'],price:'Grátis'},

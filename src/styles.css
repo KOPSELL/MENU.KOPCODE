@@ -227,3 +227,10 @@ body{background:var(--paper);color:var(--ink)}
 .pickup-location-card b{color:#fff1e2}
 .pickup-location-card small{color:#d2bba4;line-height:1.5}
 .pickup-location-card .btn{width:100%;justify-content:center}
+
+/* Campos estruturados do endereço */
+.location-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.location-fields label{display:grid;gap:6px;min-width:0}
+.location-fields .location-field-wide{grid-column:1/-1}
+.location-fields input{width:100%;min-width:0}
+@media(max-width:600px){.location-fields{grid-template-columns:1fr}.location-fields .location-field-wide{grid-column:auto}}

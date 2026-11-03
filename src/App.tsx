@@ -66,6 +66,71 @@ function OrderList({orders,onStatus}:any){return <div className="order-list">{or
 function printOrder(o:Order){const w=window.open('','_blank','width=420,height=650');if(!w)return;w.document.write('<html><head><title>Pedido</title><style>body{font:14px monospace;padding:18px}h2{text-align:center}hr{border:0;border-top:1px dashed #333}p{margin:8px 0}</style></head><body><h2>COMANDA / PEDIDO</h2><hr/><p><b>Cliente:</b> '+o.customer_name+'</p><p><b>Telefone:</b> '+o.customer_phone+'</p><p><b>Data:</b> '+new Date(o.created_at).toLocaleString('pt-BR')+'</p><hr/><p><b>Total: '+money(Number(o.total))+'</b></p><p>'+ (o.notes||'')+'</p><hr/><p>Obrigado!</p><script>window.onload=()=>window.print()<\/script></body></html>');w.document.close()}
 function PublicMenu(){const location=useLocation();const slug=decodeURIComponent(location.pathname.split('/')[2]||'').trim();const [shop,setShop]=useState<Restaurant|null>(null);const [products,setProducts]=useState<Product[]>([]);const [categories,setCategories]=useState<Category[]>([]);const [addons,setAddons]=useState<Addon[]>([]);const [cart,setCart]=useState<{product:Product,qty:number,addons:Addon[],observations:string[]}[]>([]);const [choosing,setChoosing]=useState<Product|null>(null);const [selectedAddons,setSelectedAddons]=useState<string[]>([]);const [customItemNote,setCustomItemNote]=useState('');const [category,setCategory]=useState('all');const [search,setSearch]=useState('');const [customer,setCustomer]=useState('');const [phone,setPhone]=useState('');const [address,setAddress]=useState('');const [notes,setNotes]=useState('');const [delivery,setDelivery]=useState('delivery');const [checkout,setCheckout]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [menuLoading,setMenuLoading]=useState(true);const [notFound,setNotFound]=useState(false)
  useEffect(()=>{setMenuLoading(true);setNotFound(false);setShop(null);setProducts([]);setCategories([]);setAddons([]);setCart([]);if(!supabase){setMenuLoading(false);return}let mounted=true;(async()=>{try{const {data:s,error:shopError}=await supabase!.from('restaurants').select('id,name,slug,phone,description,logo_url,cover_url,address,street,number,complement,neighborhood,city,state,postal_code,plan,accent_color,is_open,opening_hours,manual_status,created_at').eq('slug',slug).maybeSingle();if(!mounted)return;if(shopError)throw shopError;if(!s){setNotFound(true);return}setShop(s);const [p,c,a,m]=await Promise.all([supabase!.from('products').select('*').eq('restaurant_id',s.id).eq('available',true).order('created_at'),supabase!.from('categories').select('*').eq('restaurant_id',s.id).order('sort_order'),supabase!.from('additional_options').select('*').eq('restaurant_id',s.id).eq('active',true),supabase!.from('additional_option_categories').select('additional_option_id,category_id')]);if(mounted){setProducts((p.data||[]).filter((x:any)=>!x.track_stock||Number(x.stock_quantity)>0));setCategories(c.data||[]);const initialCategory=(c.data||[]).find((item:any)=>item.name.toLowerCase().includes('xis'));if(initialCategory)setCategory(initialCategory.id);setAddons((a.data||[]).map((x:any)=>({...x,category_ids:(m.data||[]).filter((z:any)=>z.additional_option_id===x.id).map((z:any)=>z.category_id)})))}}catch{if(mounted)setNotFound(true)}finally{if(mounted)setMenuLoading(false)}})();return()=>{mounted=false}},[slug])
+ async function loadCustomerPortal(token:string){
+  if(!shop||!supabase)return;
+  const {data,error}=await supabase.rpc('customer_portal_data',{p_restaurant_id:shop.id,p_device_token:token});
+  if(error)throw error;
+  const payload=data as any;
+  setCustomerProfile(payload.customer||null);
+  setCustomerAddresses((payload.addresses||[]) as CustomerAddress[]);
+  setCustomerOrders((payload.orders||[]) as CustomerPortalOrder[]);
+  setCustomerOrdersCount(Number(payload.orders_count||0));
+ }
+ async function registerCustomer(name:string,cell:string){
+  if(!shop||!supabase)throw new Error('Cardápio indisponível.');
+  const token=customerToken||crypto.randomUUID()+crypto.randomUUID();
+  const {data,error}=await supabase.rpc('customer_portal_register',{p_restaurant_id:shop.id,p_customer_name:name,p_customer_phone:cell,p_device_token:token});
+  if(error)throw error;
+  localStorage.setItem('menukopcode_customer_'+shop.id,token);
+  localStorage.setItem('menukopcode_customer_name_'+shop.id,name);
+  localStorage.setItem('menukopcode_customer_phone_'+shop.id,cell);
+  setCustomerToken(token);setCustomerProfile(data as any);setCustomer(name);setPhone(cell);
+  await loadCustomerPortal(token);
+  return token;
+ }
+ async function openCustomerArea(){
+  if(!shop||!['pro','complete'].includes(shop.plan))return;
+  setPortalError('');
+  if(customerToken){
+   try{await loadCustomerPortal(customerToken);setCustomerPortalOpen(true)}
+   catch{setCustomerToken('');setCustomerProfile(null);setCustomerLoginOpen(true)}
+  }else{
+   const savedName=localStorage.getItem('menukopcode_customer_name_'+shop.id)||'';
+   const savedPhone=localStorage.getItem('menukopcode_customer_phone_'+shop.id)||'';
+   if(savedName)setCustomer(savedName);if(savedPhone)setPhone(savedPhone);
+   setCustomerLoginOpen(true);
+  }
+ }
+ async function submitCustomerLogin(e:FormEvent){
+  e.preventDefault();setPortalBusy(true);setPortalError('');
+  try{await registerCustomer(customer.trim(),phone.trim());setCustomerLoginOpen(false);setCustomerPortalOpen(true)}
+  catch(err:any){setPortalError(err.message||'Não foi possível salvar seus dados.')}
+  finally{setPortalBusy(false)}
+ }
+ async function saveCustomerAddress(e:FormEvent){
+  e.preventDefault();if(!shop||!supabase||!customerToken)return;
+  setPortalBusy(true);setPortalError('');
+  try{
+   const {error}=await supabase.rpc('customer_portal_save_address',{p_restaurant_id:shop.id,p_device_token:customerToken,p_label:addressLabel,p_address:addressDraft});
+   if(error)throw error;
+   setAddressDraft('');await loadCustomerPortal(customerToken);
+  }catch(err:any){setPortalError(err.message||'Não foi possível salvar o endereço.')}
+  finally{setPortalBusy(false)}
+ }
+ useEffect(()=>{
+  if(!shop||!['pro','complete'].includes(shop.plan))return;
+  const token=localStorage.getItem('menukopcode_customer_'+shop.id);
+  if(!token)return;
+  setCustomerToken(token);
+  setCustomer(localStorage.getItem('menukopcode_customer_name_'+shop.id)||'');
+  setPhone(localStorage.getItem('menukopcode_customer_phone_'+shop.id)||'');
+  loadCustomerPortal(token).catch(()=>{localStorage.removeItem('menukopcode_customer_'+shop.id);setCustomerToken('')});
+ },[shop?.id]);
+ useEffect(()=>{
+  if(!shop||!customerToken||!customerPortalOpen||!supabase)return;
+  const channel=supabase.channel('customer-orders-'+shop.id).on('postgres_changes',{event:'*',schema:'public',table:'orders',filter:'restaurant_id=eq.'+shop.id},()=>{loadCustomerPortal(customerToken).catch(()=>{})}).subscribe();
+  return()=>{supabase?.removeChannel(channel)};
+ },[shop?.id,customerToken,customerPortalOpen]);
  const total=cart.reduce((s,x)=>s+(Number(x.product.price)+x.addons.reduce((n,a)=>n+Number(a.price),0))*x.qty,0);const visible=products.filter(p=>(category==='all'||p.category_id===category)&&(!search||p.name.toLowerCase().includes(search.toLowerCase())))
  function add(p:Product){if(!restaurantAcceptsOrders(shop)){setError('Estamos fora do horário de atendimento ou o restaurante está fechado.');return}setError('');setChoosing(p);setSelectedAddons([]);setCustomItemNote('')}function addToCart(p:Product,extras:Addon[],observations:string[]){setCart(v=>[...v,{product:p,qty:1,addons:extras,observations}]);setChoosing(null)}
  function qty(id:string,n:number){setCart(v=>v.map((x,i)=>i===Number(id)?{...x,qty:x.qty+n}:x).filter(x=>x.qty>0))}

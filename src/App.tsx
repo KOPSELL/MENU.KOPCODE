@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { ArrowLeft, ArrowRight, Bell, Check, ChefHat, Clock3, ImagePlus, LayoutDashboard, LogOut, Menu as MenuIcon, MessageCircle, Package, Plus, Printer, Search, Settings, ShoppingBag, Store, Trash2, TrendingUp, Upload, Utensils, X, ShieldCheck, RefreshCw, Users, CalendarDays } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Bell, Check, ChefHat, Clock3, ImagePlus, LayoutDashboard, LogOut, Menu as MenuIcon, MessageCircle, MapPin, Package, Plus, Printer, Search, Settings, ShoppingBag, Store, Trash2, TrendingUp, Upload, Utensils, X, ShieldCheck, RefreshCw, Users, CalendarDays } from 'lucide-react'
 
 const url = (import.meta.env.VITE_SUPABASE_URL || 'https://nwznpaybbqpuqbowllzx.supabase.co') as string | undefined
 // Publishable keys are designed for browser use; keep database access protected by RLS.

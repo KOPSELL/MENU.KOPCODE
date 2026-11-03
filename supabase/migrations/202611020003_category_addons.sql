@@ -45,6 +45,8 @@ declare
   v_qty integer;
   v_addons jsonb;
   v_item_total numeric(12,2);
+  v_addon_name text;
+  v_addon_price numeric(12,2);
 begin
   if length(trim(coalesce(p_customer_name,''))) < 2 then raise exception 'Informe seu nome.'; end if;
   if length(regexp_replace(coalesce(p_customer_phone,''),'[^0-9]','','g')) < 8 then raise exception 'Informe um WhatsApp válido.'; end if;
@@ -83,11 +85,11 @@ begin
     v_addons := '[]'::jsonb;
     v_item_total := v_product.price;
     for v_addon in select * from jsonb_to_recordset(coalesce(v_item.addons,'[]'::jsonb)) as a(addon_id uuid, quantity integer) loop
-      select ao.name,ao.price into v_addon from public.additional_options ao
+      select ao.name,ao.price into v_addon_name,v_addon_price from public.additional_options ao
       join public.additional_option_categories aoc on aoc.additional_option_id=ao.id
       where ao.id=v_addon.addon_id and ao.restaurant_id=p_restaurant_id and ao.active=true and aoc.category_id=v_product.category_id;
-      v_addons := v_addons || jsonb_build_array(jsonb_build_object('name',v_addon.name,'price',v_addon.price,'quantity',coalesce((select (x->>'quantity')::integer from jsonb_array_elements(coalesce(v_item.addons,'[]'::jsonb)) x where x->>'addon_id'=v_addon.id::text limit 1),1)));
-      v_item_total := v_item_total + v_addon.price;
+      v_addons := v_addons || jsonb_build_array(jsonb_build_object('name',v_addon_name,'price',v_addon_price,'quantity',coalesce(v_addon.quantity,1)));
+      v_item_total := v_item_total + (v_addon_price * coalesce(v_addon.quantity,1));
     end loop;
     insert into public.order_items(order_id,product_id,product_name,unit_price,quantity,total,addons)
     values(v_order_id,v_product.id,v_product.name,v_item_total,v_item.quantity,v_item_total*v_item.quantity,v_addons);

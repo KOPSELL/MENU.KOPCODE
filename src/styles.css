@@ -258,3 +258,47 @@ body{background:var(--paper);color:var(--ink)}
 .printing-notice b{display:block;font-size:14px;line-height:1.4}
 .printing-notice p{margin:5px 0 0;color:#795b31;font-size:12px;line-height:1.55}
 @media(max-width:600px){.printing-notice{padding:13px;gap:10px}.printing-notice b{font-size:13px}}
+
+
+/* MOBILE FIRST HARDENING — evita zoom automático e rolagem lateral */
+html{width:100%;max-width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:12px}
+body,#root{width:100%;max-width:100%;min-width:320px}
+img,svg,video,canvas{max-width:100%}
+button,a,input,select,textarea{touch-action:manipulation}
+@media(max-width:700px){
+ html,body{overflow-x:hidden}
+ #root,.landing,.dashboard,.public-menu,.admin-shell{width:100%;max-width:100%;min-width:0}
+ .wrap,.dash-main,.admin-main,.menu-content{min-width:0;max-width:100%}
+ .dash-main{padding-left:12px;padding-right:12px}
+ .dash-header,.panel-head,.panel-card,.stat-card,.welcome-banner,.printing-notice,.product-admin,.order-row,.admin-header,.admin-section,.admin-section-head,.admin-order,.admin-modal-head{min-width:0;max-width:100%}
+ .dash-header{gap:8px}.dash-header h1{overflow-wrap:anywhere}
+ .header-actions{gap:6px;flex-shrink:0}
+ .welcome-banner{gap:10px}.welcome-banner>div:first-child{min-width:0}.welcome-illustration{flex:0 0 auto}
+ .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stat-card{overflow-wrap:anywhere}.panel-card{overflow:hidden}
+ .order-info,.product-admin-info{min-width:0}
+ .order-info span,.product-admin-info span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ .sidebar{overflow-x:auto;overscroll-behavior-x:contain}.sidebar>.side-link{white-space:nowrap}
+ .hours-row{min-width:0}.location-fields>*{min-width:0}
+ .form-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .modal-backdrop,.admin-modal-backdrop{align-items:center;overflow-y:auto}
+ .product-modal,.checkout-modal,.admin-edit-modal{width:min(100%,460px);max-width:100%;max-height:calc(100dvh - 16px);overflow-y:auto;overscroll-behavior:contain}
+ .public-products{grid-template-columns:minmax(0,1fr)}.public-product{min-width:0}.public-product-info{min-width:0;overflow-wrap:anywhere}
+ .cart-bar{left:10px;right:10px;max-width:calc(100% - 20px)}
+ .admin-shell{display:block}.admin-sidebar{min-width:0;max-width:100%;overflow-x:hidden}
+ .admin-main{padding:20px 12px}.admin-section{overflow:hidden}.admin-section-head{min-width:0}
+ .admin-search{min-width:0;width:100%}
+ .admin-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .admin-order{grid-template-columns:30px minmax(0,1fr) auto;gap:8px}
+ .admin-order-info{min-width:0}.admin-order-info small{max-width:100%;overflow-wrap:anywhere}
+ .admin-edit-modal{padding:18px}
+ /* Campos com menos de 16px fazem o Safari/iPhone ampliar a página ao focar. */
+ input:not([type="checkbox"]):not([type="radio"]),textarea,select{font-size:16px!important;max-width:100%}
+}
+@media(max-width:380px){
+ .wrap{width:calc(100% - 26px)}.dash-main{padding-left:10px;padding-right:10px}
+ .dash-header h1{font-size:18px}.stat-card{padding:10px}.panel-card{padding:12px}
+ .welcome-banner{padding:16px}.welcome-banner h2{font-size:16px}
+ .hours-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

@@ -124,3 +124,89 @@ body{background:var(--paper);color:var(--ink)}
   .category-pills{margin-right:-13px;padding-right:13px}
   .cart-bar{border-radius:13px}
 }
+
+
+/* PUBLIC MENUS — dark, appetite-led restaurant identity */
+.public-menu{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  color:#fff7eb;
+  background:
+    radial-gradient(ellipse at 12% 24%,#4b2115 0,transparent 34%),
+    radial-gradient(ellipse at 88% 68%,#33200f 0,transparent 38%),
+    #090909;
+}
+.public-menu .food-float-layer{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  overflow:hidden;
+  pointer-events:none;
+}
+.food-float-layer span{
+  position:absolute;
+  bottom:-90px;
+  left:var(--x,10%);
+  font-size:clamp(25px,3.5vw,43px);
+  opacity:0;
+  filter:drop-shadow(0 7px 12px #0009);
+  animation:food-rise var(--duration,19s) linear infinite;
+  animation-delay:var(--delay,0s);
+}
+.food-float-layer span:nth-child(1){--x:7%;--duration:21s;--delay:-13s}
+.food-float-layer span:nth-child(2){--x:19%;--duration:25s;--delay:-4s}
+.food-float-layer span:nth-child(3){--x:33%;--duration:23s;--delay:-17s}
+.food-float-layer span:nth-child(4){--x:48%;--duration:27s;--delay:-8s}
+.food-float-layer span:nth-child(5){--x:63%;--duration:22s;--delay:-19s}
+.food-float-layer span:nth-child(6){--x:76%;--duration:26s;--delay:-11s}
+.food-float-layer span:nth-child(7){--x:88%;--duration:24s;--delay:-2s}
+.food-float-layer span:nth-child(8){--x:96%;--duration:28s;--delay:-15s}
+@keyframes food-rise{
+  0%{transform:translate3d(0,0,0) rotate(-12deg) scale(.8);opacity:0}
+  12%{opacity:.20}
+  75%{opacity:.16}
+  100%{transform:translate3d(24px,-115vh,0) rotate(18deg) scale(1.12);opacity:0}
+}
+.public-menu .public-top{position:relative;z-index:2;background:#090909e8;border-bottom:1px solid #ffffff12;backdrop-filter:blur(12px)}
+.public-menu .public-top .brand{color:#fff7eb}
+.public-menu .public-top .brand-icon{background:#3a2115;color:#ffb14a}
+.public-menu .public-top .brand-dot{color:#ff7138}
+.public-menu .public-top>span{color:#c8b9a8}
+.public-menu .store-cover{position:relative;z-index:1;box-shadow:0 15px 45px #0007}
+.public-menu .store-cover:after{background:linear-gradient(0deg,#080808ed 0%,#08080830 72%,transparent)}
+.public-menu .store-identity h1{color:#fff8ed;text-shadow:0 3px 18px #000a}
+.public-menu .store-identity p,.public-menu .store-identity small{color:#f2dfca}
+.public-menu .menu-content{position:relative;z-index:1}
+.public-menu .eyebrow{color:#ff9b45}
+.public-menu .menu-heading h2{color:#fff5e8}
+.public-menu .search-box{background:#171513;border-color:#49372a;color:#d8b99d}
+.public-menu .search-box input{background:transparent;color:#fff5e8}
+.public-menu .search-box input::placeholder{color:#a99a8c}
+.public-menu .category-pills button{background:#171513;border-color:#49372a;color:#ead9c7}
+.public-menu .category-pills button.selected{background:linear-gradient(135deg,#e45c2b,#f29a32);border-color:#f29a32;color:#180d08}
+.public-menu .public-product{background:linear-gradient(145deg,#201a16,#151311);border-color:#493326;box-shadow:0 9px 25px #0005}
+.public-menu .public-product:hover{box-shadow:0 14px 30px #0009}
+.public-menu .public-product-img{background:#2b2119;color:#e9a15e}
+.public-menu .public-product-info h3{color:#fff2e3}
+.public-menu .public-product-info p{color:#c0ad9a}
+.public-menu .public-product-info strong{color:#ffad49}
+.public-menu .add-product{background:linear-gradient(135deg,#e85d2b,#f5a333);color:#1b1009}
+.public-menu .empty{color:#d1a77f}
+.public-menu .empty p{color:#c0ad9a}
+.public-menu .cart-bar{z-index:5;background:linear-gradient(110deg,#e65b2c,#f29b32);color:#1b0e07;box-shadow:0 14px 42px #0009}
+.public-menu .checkout-modal{background:#171412;color:#fff3e5;border-color:#493326}
+.public-menu .checkout-modal .modal-head h2,.public-menu .checkout-modal .checkout-total{color:#fff3e5}
+.public-menu .checkout-modal .modal-head p,.public-menu .checkout-modal .terms{color:#c0ad9a}
+.public-menu .checkout-modal label{color:#ead7c3}
+.public-menu .checkout-modal input,.public-menu .checkout-modal textarea{background:#0e0d0c;border-color:#493326;color:#fff3e5}
+.public-menu .checkout-items{border-color:#493326}
+.public-menu .checkout-items button{background:#282019;border-color:#59402e;color:#fff3e5}
+.public-menu .delivery-choice button{background:#211a15;border-color:#493326;color:#ead7c3}
+.public-menu .delivery-choice button.chosen{background:#492515;border-color:#f08a37;color:#ffb45c}
+.public-menu .checkout-modal .btn.primary{background:linear-gradient(110deg,#e65b2c,#f29b32);color:#1b0e07}
+@media(prefers-reduced-motion:reduce){.food-float-layer span{animation:none;opacity:.08}}
+@media(max-width:650px){
+  .food-float-layer span{font-size:26px}
+  .public-menu .public-product{background:#1b1714}
+}

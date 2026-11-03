@@ -70,7 +70,6 @@ begin
         where ao.id=v_addon.addon_id and ao.restaurant_id=p_restaurant_id and ao.active=true
           and aoc.category_id=v_product.category_id
       ) then raise exception 'Um adicional selecionado não pertence à categoria deste produto.'; end if;
-      select ao.name,ao.price into v_addon from public.additional_options ao where ao.id=v_addon.addon_id;
       select ao.price into v_addon_price from public.additional_options ao where ao.id=v_addon.addon_id and ao.restaurant_id=p_restaurant_id and ao.active=true;
       v_total := v_total + (v_addon_price * coalesce(v_item.quantity,1) * coalesce(v_addon.quantity,1));
     end loop;

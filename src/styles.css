@@ -302,3 +302,41 @@ button,a,input,select,textarea{touch-action:manipulation}
  .hours-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  .admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+
+/* CENTRAL DO CLIENTE — Premium e Gestão Completa */
+.public-top{display:flex;align-items:center;gap:14px}
+.public-top>span{margin-left:auto}
+.customer-account-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap}
+.customer-account-btn:hover{border-color:var(--orange);color:var(--orange)}
+.customer-privacy-note{display:flex;align-items:flex-start;gap:10px;padding:13px;border:1px solid #d8eadc;border-radius:12px;background:#f3faf4;color:#315c3c;font-size:12px;line-height:1.55}
+.customer-privacy-note svg{flex:0 0 auto;margin-top:2px}
+.customer-privacy-note b{display:block;margin-bottom:2px}
+.customer-portal-modal{max-width:620px}
+.customer-portal-actions{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 18px}
+.customer-portal-section{border-top:1px solid var(--line);padding:17px 0}
+.customer-portal-section h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:15px}
+.customer-address-row{display:grid;gap:3px;padding:10px 12px;margin-bottom:7px;background:#f7f5f0;border-radius:10px;font-size:13px}
+.customer-address-row span{color:var(--muted)}
+.customer-address-form{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:8px;margin-top:12px}
+.customer-address-form input{min-width:0;width:100%;border:1px solid var(--line);border-radius:9px;padding:10px}
+.customer-address-form .btn{white-space:nowrap}
+.customer-order-card{display:grid;gap:8px;padding:13px;margin:0 0 10px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.customer-order-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.customer-order-head>b{font-size:13px}
+.customer-order-status{padding:5px 9px;border-radius:999px;background:#f3eee5;color:#72512e;font-size:11px;font-weight:800;white-space:nowrap}
+.customer-order-status.status-preparing{background:#fff2d8;color:#895b11}
+.customer-order-status.status-ready{background:#e5f4e9;color:#277142}
+.customer-order-status.status-completed{background:#e9eef8;color:#385783}
+.customer-order-status.status-cancelled{background:#fae9e7;color:#a33a34}
+.customer-order-card>small{color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.customer-order-item{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.customer-order-card>strong{justify-self:end;font-size:15px}
+.customer-logout{border:0;background:transparent;color:#a33a34;font-weight:700;padding:10px 0}
+@media(max-width:600px){
+ .public-top{gap:7px}.public-top>span{font-size:11px}.customer-account-btn{padding:8px 10px;font-size:11px}
+ .customer-address-form{grid-template-columns:1fr}
+ .customer-portal-modal{max-height:calc(100dvh - 14px);overflow-y:auto}
+ .customer-portal-actions>*{flex:1}
+ .customer-order-head{align-items:flex-start;flex-direction:column;gap:6px}
+}

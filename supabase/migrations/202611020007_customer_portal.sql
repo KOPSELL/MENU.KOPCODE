@@ -246,3 +246,13 @@ grant execute on function public.customer_portal_register(uuid,text,text,text) t
 grant execute on function public.customer_portal_data(uuid,text) to anon, authenticated;
 grant execute on function public.customer_portal_save_address(uuid,text,text,text) to anon, authenticated;
 grant execute on function public.submit_restaurant_order_for_customer(uuid,text,text,text,text,text,jsonb,text) to anon, authenticated;
+
+
+-- Keep the customer order timeline updated while the customer portal is open.
+do $$
+begin
+  alter publication supabase_realtime add table public.orders;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end $$;
